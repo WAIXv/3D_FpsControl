@@ -9,7 +9,7 @@ namespace Script.Controll
     {
         public Rigidbody Rigid;
         public Transform Player;
-        public Transform MainCamera;
+        public Camera MainCamera;
         public Animator Anim;
         public GameObject View;
         public GameObject GroundCheck_L;
@@ -26,7 +26,9 @@ namespace Script.Controll
         public float topAngle = 90f;
         public float lowAngle = -90f;
         [Header("Éä»÷")]
+        public Transform gun;
         public float shootDistance = 1000;
+        public float aimFOV = 42;
         [Header("ÌøÔ¾")]
         public float jumpSpeed = 10;
 
@@ -41,16 +43,19 @@ namespace Script.Controll
         protected float yRotation;
         protected float runMultiplier;
         protected bool playerOnGround;
+        protected float originFOV;
 
         public virtual void Start()
         {
             Player = transform;
-            MainCamera = Camera.main.transform;
+            MainCamera = Camera.main;
             Rigid = GetComponent<Rigidbody>();
+            gun = GameObject.FindGameObjectWithTag("Gun").transform;
             if (Anim == null) { Anim = GameObject.FindGameObjectWithTag("Player").GetComponent<Animator>(); }
             if (View == null)   { View = GameObject.FindGameObjectWithTag("Player_View"); }
             GroundCheck_L = GameObject.Find("GroundCheck_L");
             GroundCheck_R = GameObject.Find("GroundCheck_R");
+            originFOV = MainCamera.fieldOfView;
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
 
@@ -102,6 +107,11 @@ namespace Script.Controll
                 Rigid.velocity += jumpSpeed * Vector3.up;
                 Anim.SetTrigger("Jump");
             }
+        }
+
+        protected virtual void Aim()
+        {
+
         }
 
 

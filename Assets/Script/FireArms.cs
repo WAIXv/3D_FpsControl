@@ -6,11 +6,12 @@ namespace Script.Weapon
 {
     public abstract class FireArms : MonoBehaviour,IWeapon
     {
+        public ReCoil ReCoil_Script;
         public Transform MuzzlePiont;
         public Transform CasingPoint;
         public GameObject BulletPrefab;
         public GameObject BulletImpactPrefab;
-        public Camera ViewCamera;
+        public Camera MainCamera;
 
         public ParticleSystem MuzzleParticle;
         public ParticleSystem CasingParticle;
@@ -33,6 +34,8 @@ namespace Script.Weapon
         protected float OriginFOV;
         protected bool isAiming;
         protected bool isLoading;
+        protected Vector3 TargetPoint;
+        protected Vector3 mousePosition;
 
         protected abstract void Shooting();
         protected abstract void Reload();
@@ -40,11 +43,23 @@ namespace Script.Weapon
 
         protected virtual void Start()
         {
-            ViewCamera = Camera.main;
+            MainCamera = Camera.main;
             CurrentAmmo = AmmoInMag;
             CurrentMaxAmmoCarried = MaxAmmoCarried;
             GunAnimator = GetComponent<Animator>();
-            OriginFOV = ViewCamera.fieldOfView;
+            OriginFOV = MainCamera.fieldOfView;
+            ReCoil_Script = transform.GetComponent<ReCoil>();
+        }
+
+        protected virtual void GetTargetPoint()
+        {
+            Vector3 dir = MainCamera.transform.forward;
+            RaycastHit hit;
+            if (Physics.Raycast(MainCamera.transform.position, dir, out hit, 1000))
+            {
+                TargetPoint = hit.point;
+            }
+            Debug.DrawRay(MainCamera.transform.position, dir * 1000);
         }
 
         public void DoAttack()

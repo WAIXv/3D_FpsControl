@@ -7,12 +7,16 @@ namespace Script.Controll
     public class CameraController : MonoBehaviour
     {
         public Transform Player;
-        public Transform Target;
+        public static Transform CameraRo;
         public Transform Camera;
+        public LayerMask PlayerMask;
         public float topAngle = 90f;
         public float lowAngle = -90f;
-        public float cameraPositionY = 2f;
-        public float cameraPositionX = 1f;
+        public float CameraOffsetY = 2f;
+        public float CameraOffsetX = 1f;
+        public float AimOffsetX = 1f;
+        public float AimOffsetY = 1f;
+        public Quaternion AimRotation;
         public float cameraDistance = 3f;
         public float cameraSensitivity = 3f;
         public float cameraSpeed = 3f;
@@ -21,15 +25,17 @@ namespace Script.Controll
         protected float yRotation;
         protected float zMove;
         protected float xMove;
-        protected Vector3 offset;
-        protected float offsetRange;
+        protected float originOffsetY;
+        protected float originOffsetX;
 
         void Start()
         {
             Player = GameObject.FindGameObjectWithTag("Player").transform;
-            Target = GameObject.Find("CameraTarget").transform;
+            CameraRo = GameObject.Find("CameraRo").transform;
             Camera = transform;
-            Camera.position = Target.position - Target.forward * cameraDistance;
+            Camera.position = CameraRo.position - CameraRo.forward * cameraDistance;
+            originOffsetX = CameraOffsetX;
+            originOffsetY = CameraOffsetY;
         }
 
         void Update()
@@ -40,7 +46,19 @@ namespace Script.Controll
         }
         protected void MoveTarget()
         {
-            Target.position = Player.position +  cameraPositionY * Vector3.up + Quaternion.Euler(0,yRotation,0) * Vector3.right * cameraPositionX  ;
+            if (PlayerController_TPS_Anim.isAiming)
+            {
+                CameraOffsetX = originOffsetX + AimOffsetX;
+                CameraOffsetY = originOffsetY + AimOffsetY;
+                Camera.localRotation = AimRotation;
+            }
+            else
+            {
+                CameraOffsetX = originOffsetX;
+                CameraOffsetY = originOffsetY;
+                Camera.LookAt(CameraRo);
+            }
+            CameraRo.position = Player.position + CameraOffsetY * Vector3.up + Quaternion.Euler(0, yRotation, 0) * Vector3.right * CameraOffsetX;
         }
 
         protected void RotateCamera()
@@ -49,18 +67,19 @@ namespace Script.Controll
             yRotation += PlayerController.mouseX * cameraSensitivity;
             xRotation = Mathf.Clamp(xRotation,lowAngle,topAngle);
             Quaternion localRotation = Quaternion.Euler(xRotation, yRotation, 0);
-            Target.localRotation = localRotation;
+            CameraRo.localRotation = localRotation;
         }
         protected void CollisionDetect()
         {
             RaycastHit hitInfo;
-            if (Physics.Raycast(Target.position, (Camera.position - Target.position).normalized, out hitInfo, cameraDistance))
+            if (Physics.Raycast(CameraRo.position, (Camera.position - CameraRo.position).normalized, out hitInfo, cameraDistance))
             {
                 Camera.position = hitInfo.point;
             }
             else 
             {
-                Camera.position = Vector3.Lerp(Camera.position, Target.position - Target.forward * cameraDistance,cameraSpeed*Time.deltaTime);
+                if(PlayerController_TPS_Anim.isAiming)
+                Camera.position = Vector3.Lerp(Camera.position, CameraRo.position - CameraRo.forward * cameraDistance,cameraSpeed*Time.deltaTime);
             }
         }
     }

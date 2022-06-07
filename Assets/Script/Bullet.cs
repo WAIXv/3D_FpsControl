@@ -23,7 +23,7 @@ namespace Script.Weapon
         private void Update()
         {
             prePosition = bulletTranform.position;
-            bulletTranform.Translate(BulletSpeed * Time.deltaTime, 0, 0, Space.Self);
+            bulletTranform.Translate(0, 0, BulletSpeed * Time.deltaTime, Space.Self);
             if (!Physics.Raycast(prePosition,
                 (transform.position - prePosition).normalized,
                 out RaycastHit tmp_Hit,

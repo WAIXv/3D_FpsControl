@@ -17,7 +17,7 @@ namespace Script.Weapon
             doAimCoroutine = DoAim();
         }
 
-        private void LateUpdate()
+        private void Update()
         {
             if (Input.GetMouseButton(0))
             {
@@ -27,19 +27,17 @@ namespace Script.Weapon
             {
                 Reload();
             }
-            if(Input.GetMouseButton(1)&&!isLoading)
+            if(Input.GetMouseButtonDown(1))
             {
-                //Aim in
                 isAiming = true;
-                Aim();
+                StartCoroutine(doAimCoroutine);
             }
             if(Input.GetMouseButtonUp(1))
             {
-                //Aim out
                 isAiming = false;
-                Aim();
+                StartCoroutine(doAimCoroutine);
             }
-
+            GetTargetPoint();
             test();
         }
 
@@ -90,6 +88,7 @@ namespace Script.Weapon
             if (CurrentAmmo <= 0) return;
             if (!isAllowShooting()) return;
             if (isLoading) return;
+            ReCoil_Script.RecoilFire();
             MuzzleParticle.Play();
             CurrentAmmo -= 1;
 
@@ -97,10 +96,13 @@ namespace Script.Weapon
             FirearmsShootingAudioSource.clip = FirearmsAudioData.ShootingAudio;
             FirearmsShootingAudioSource.Play();
 
+            MuzzlePiont.LookAt(TargetPoint);
             CreateBullet();
             CasingParticle.Play();
             LastFireTime = Time.time;
         }
+
+
         protected void CreateBullet()
         {
             GameObject tmp_Bullet = Instantiate(BulletPrefab, MuzzlePiont.position, MuzzlePiont.rotation);
@@ -143,12 +145,13 @@ namespace Script.Weapon
             while(true)
             {
                 yield return null;
+                GunAnimator.SetBool("Aim", isAiming);
                 float tmp_CurrentFOV = 0;
-                ViewCamera.fieldOfView = 
-                    Mathf.SmoothDamp(ViewCamera.fieldOfView, 
+                MainCamera.fieldOfView = 
+                    Mathf.SmoothDamp(MainCamera.fieldOfView, 
                     isAiming ? TargetAimFOV : OriginFOV,
                     ref tmp_CurrentFOV, 
-                    Time.deltaTime * 5);
+                    Time.deltaTime * 10);
             }
         }
 
